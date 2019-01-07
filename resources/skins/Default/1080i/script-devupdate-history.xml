@@ -19,7 +19,7 @@
 				<top>80</top>
 				<width>930</width>
 				<height>670</height>
-				<texture border="40">buttons/dialogbutton-nofo.png</texture>
+				<texture border="40">dialogbutton-nofo.png</texture>
 			</control>
 			<control type="panel" id="2">
 				<left>35</left>

@@ -214,13 +214,7 @@ def add_custom_sources(sources):
                 log.log_error("Invalid build type index '{}'".format(build_type))
                 build_type_index = 0
 
-            if build_type_index == 2:
-                subdir = addon.get_setting('subdir_preset' + suffix)
-                if subdir == L10n(32128):
-                    subdir = addon.get_setting('other_subdir' + suffix)
-                custom_name = "Milhouse Builds ({})".format(subdir)
-                sources[custom_name] = builds.MilhouseBuildsURL(subdir)
-            elif build_type_index < 2:
+            if build_type_index < 2:
                 custom_name = addon.get_setting('custom_source' + suffix)
                 custom_url = addon.get_setting('custom_url' + suffix)
                 scheme, netloc = urlparse(custom_url)[:2]
@@ -237,5 +231,3 @@ def add_custom_sources(sources):
 
                 sources[custom_name] = builds.BuildsURL(
                     custom_url, extractor=custom_extractors[build_type_index], **kwargs)
-            elif build_type_index == 3:
-                sources["DarkAngel2401 Dual Audio Builds"] = builds.dual_audio_builds

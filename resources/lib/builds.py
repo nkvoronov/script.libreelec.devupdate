@@ -26,10 +26,12 @@ timeout = None
 arch = libreelec.ARCH
 date_fmt = '%d %b %y'
 
+#Errors
 
 class BuildURLError(Exception):
     pass
 
+#Builds
 
 class Build(object):
     DATETIME_FMT = '%Y%m%d%H%M%S'
@@ -81,25 +83,21 @@ class Build(object):
 
 
 class Release(Build):
-    """Subclass of Build for official releases.
-
-       Has additional methods for retrieving datetime information from the git tags.
-    """
     DATETIME_FMT = '%Y-%m-%dT%H:%M:%S'
-    MIN_VERSION = [3,95,0]
+    MIN_VERSION = [6,90,0]
+
     tags = None
 
     def __init__(self, version):
         self.release_str = version
         log.log("version - {}".format(version))
-        self._has_date = True
-        Build.__init__(self, '2016-04-06T17:26:00', version)
+        Build.__init__(self, '2017-02-21T21:11:00', version)
         self._is_release = True
         self.release = [int(p) for p in version.split('.')]
         log.log("release - {}".format(self.release))
 
     def is_valid(self):
-        return self._has_date and self.release >= self.MIN_VERSION
+        return self.release >= self.MIN_VERSION
 
     __nonzero__ = is_valid
 
@@ -114,7 +112,6 @@ class Release(Build):
 
 
 class BuildLinkBase(object):
-    """Base class for links to builds"""
     def __init__(self, baseurl, link):
         # Set the absolute URL
         link = link.strip()
@@ -154,21 +151,19 @@ class BuildLinkBase(object):
 
 
 class BuildLink(Build, BuildLinkBase):
-    """Holds information about a link to an ELEC build."""
     def __init__(self, baseurl, link, datetime_str, revision):
         BuildLinkBase.__init__(self, baseurl, link)
         Build.__init__(self, datetime_str, version=revision)
 
 
 class ReleaseLink(Release, BuildLinkBase):
-    """Class for links to ELEC release downloads."""
     def __init__(self, baseurl, link, release):
         BuildLinkBase.__init__(self, baseurl, link)
         Release.__init__(self, release)
 
+#Extractors
 
 class BaseExtractor(object):
-    """Base class for all extractors."""
     url = None
 
     def __init__(self, url=None):
@@ -193,7 +188,6 @@ class BaseExtractor(object):
 
 
 class BuildLinkExtractor(BaseExtractor):
-    """Base class for extracting build links from a URL"""
     BUILD_RE = (".*{dist}.*-{arch}-(?:\d+\.\d+-|)[a-zA-Z]+-(\d+)"
                 "-r\d+[a-z]*-g([0-9a-z]+)\.tar(|\.bz2)")
     CSS_CLASS = None
@@ -220,10 +214,45 @@ class BuildLinkExtractor(BaseExtractor):
         log.log("match - {}".format(*self.build_re.match(href).groups()[:2]))
         return BuildLink(self.url, href, *self.build_re.match(href).groups()[:2])
 
+class BuildLinkExtractorMultiPage(BuildLinkExtractor):
+
+    def __iter__(self):
+        html = self._text()
+        args = ['a']
+        if self.CSS_CLASS is not None:
+            args.append(self.CSS_CLASS)
+
+        self.build_re = re.compile(self.BUILD_RE.format(dist=libreelec.dist(), arch=arch), re.I)
+
+        while True:
+
+            soup = BeautifulSoup(html, 'html.parser',
+                             parse_only=SoupStrainer(*args, href=self.build_re))
+
+            for link in soup.contents:
+                l = self._create_link(link)
+                if l:
+                    yield l
+
+            soup_next = BeautifulSoup(html, 'html.parser',
+                                     parse_only=SoupStrainer('div', {'class': 'pagination'}))
+            next_page_link = soup_next.find('a', text='Next')
+
+            if next_page_link:
+
+                href = next_page_link['href']
+                html = requests.get(href).text
+
+            else:
+                break
+
 class DropboxBuildLinkExtractor(BuildLinkExtractor):
     CSS_CLASS = 'filename-link'
 
 class YDBuildLinkExtractor(BuildLinkExtractor):
+    BUILD_RE = ".*{dist}.*-{arch}-[\d\.]+-(\d+)-r\d+[a-z]*-g([0-9a-z]+)\.tar(|\.bz2)"
+
+class YDBuildLinkExtractorAll(BuildLinkExtractorMultiPage):
     BUILD_RE = ".*{dist}.*-{arch}-[\d\.]+-(\d+)-r\d+[a-z]*-g([0-9a-z]+)\.tar(|\.bz2)"
 
 class ReleaseLinkExtractor(BuildLinkExtractor):
@@ -236,8 +265,9 @@ class ReleaseLinkExtractor(BuildLinkExtractor):
         log.log("match - {}".format(self.build_re.match(href).group(1)))
         return ReleaseLink(self.url, href, self.build_re.match(href).group(1))
 
+#BuildsInfo
+
 class BuildInfo(object):
-    """Class to hold the short summary of a build and the full details."""
     def __init__(self, summary, details=None):
         self.summary = summary
         self.details = details
@@ -247,19 +277,14 @@ class BuildInfo(object):
 
 
 class BuildDetailsExtractor(BaseExtractor):
-    """Default class for extracting build details which returns an empty string."""
     def get_text(self):
         return ""
 
 class BuildInfoExtractor(BaseExtractor):
-    """Default build info extractor class for all build sources which just creates
-       an empty dictionary."""
     def get_info(self):
         return {}
 
 class CommitInfoExtractor(BuildInfoExtractor):
-    """Class used by development build sources for extracting the git commit messages
-       for a commit hash as the summary. Full build details are set to None."""
     url = "https://api.github.com/repositories/1093060/commits?per_page=100"
 
     def get_info(self):
@@ -267,9 +292,9 @@ class CommitInfoExtractor(BuildInfoExtractor):
                      BuildInfo(commit['commit']['message'].split('\n\n')[0], None))
                      for commit in self._json())
 
+#BuildsURL
 
 class BuildsURL(object):
-    """Class representing a source of builds."""
     def __init__(self, url, subdir=None, extractor=BuildLinkExtractor,
                  info_extractors=[BuildInfoExtractor()]):
         self.url = url
@@ -286,7 +311,6 @@ class BuildsURL(object):
         return iter(self.builds())
 
     def latest(self):
-        """Return the most recent build or None if no builds are available."""
         builds = self.builds()
         try:
             return builds[0]
@@ -310,7 +334,6 @@ class BuildsURL(object):
 
 
 def get_installed_build():
-    """Return the currently installed build object."""
     DEVEL_RE = ".*-(\d+)-r\d+-g([a-z0-9]+)"
 
     if libreelec.OS_RELEASE['NAME'] in ("LibreELEC"):
@@ -328,15 +351,11 @@ def get_installed_build():
 
 
 def sources():
-    """Return an ordered dictionary of the sources as BuildsURL objects.
-       Only return sources which are relevant for the system.
-       The GUI will show the sources in the order defined here.
-    """
     _sources = OrderedDict()
 
     _sources["YLLOW_DRAGON"] = BuildsURL(
         "https://github.com/nkvoronov/{dist}.tv/releases".format(dist=libreelec.OS_RELEASE['NAME']),
-        extractor=YDBuildLinkExtractor)
+        extractor=YDBuildLinkExtractorAll)
 
     _sources["LibreELEC.tv"] = BuildsURL(
         "http://archive.{dist}.tv".format(dist=libreelec.dist()),
@@ -346,9 +365,6 @@ def sources():
 
 
 def latest_build(source):
-    """Return the most recent build for the provided source name or None if
-       there is an error. This is used by the service to check for a new build.
-    """
     build_sources = sources()
     try:
         build_url = build_sources[source]
@@ -367,7 +383,6 @@ def get_build_from_notify_file():
 
 
 def main():
-    """Test function to print all available builds when executing the module."""
     import sys
 
     installed_build = get_installed_build()
