@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addon id="script.libreelec.devupdate"
 		name="LibreELEC Dev Update"
-		version="14.40.0"
+		version="14.41.0"
 		provider-name="Leopold, YLLOW_DRAGON">
 	<requires>
-		<import addon="xbmc.python" version="2.13.0"/>
+		<import addon="xbmc.python" version="2.25.0"/>
 		<import addon="os.libreelec.tv" version="8.0" optional="false"/>
 		<import addon="script.module.beautifulsoup4" version="4.3.2" optional="false"/>
 		<import addon="script.module.requests" version="2.3.0" optional="false"/>

@@ -1,30 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <window>
-	<defaultcontrol>10</defaultcontrol>
+	<defaultcontrol always="true">10</defaultcontrol>
+	<include>Animation_DialogPopupOpenClose</include>
 	<controls>
 		<control type="group">
-			<animation effect="fade" start="0" end="100" time="600">WindowOpen</animation>
-			<animation effect="fade" start="1000" end="0" time="600">WindowClose</animation>
-			<width>1100</width>
-			<height>1080</height>
-			<centerleft>960</centerleft>
-			<centertop>540</centertop>
+			<centertop>50%</centertop>
+			<centerleft>50%</centerleft>
+			<height>742</height>
+			<width>930</width>
+			<include content="DialogBackgroundCommons">
+				<param name="width" value="930" />
+				<param name="height" value="742" />
+				<param name="header_label" value="$ADDON[script.libreelec.devupdate 32145]" />
+				<param name="header_id" value="1" />
+			</include>
 			<control type="image">
-				<description>Background image</description>
-				<texture colordiffuse="ff111111">white.png</texture>
-			</control>
-			<control type="label" id="1">
-				<description>Title</description>
-				<width>1100</width>
-				<height>90</height>
-				<top>40</top>
-				<align>center</align>
-				<textcolor>ffffffff</textcolor>
+				<left>0</left>
+				<top>80</top>
+				<width>930</width>
+				<height>670</height>
+				<texture border="40">buttons/dialogbutton-nofo.png</texture>
 			</control>
 			<control type="panel" id="2">
-				<top>131</top>
-				<left>170</left>
-				<height>880</height>
+				<left>35</left>
+				<top>100</top>
+				<height>625</height>
 				<pagecontrol>10</pagecontrol>
 				<scrolltime>2000</scrolltime>
 				<itemlayout height="44" width="820">
@@ -56,12 +56,11 @@
 				</focusedlayout>
 			</control>
 			<control type="scrollbar" id="10">
-				<top>131</top>
-				<left>1092</left>
-				<height>880</height>
-				<texturesliderbackground colordiffuse="ff999999">white.png</texturesliderbackground>
-				<texturesliderbar colordiffuse="ffffffff">white.png</texturesliderbar>
-				<texturesliderbarfocus colordiffuse="ffffffff">white.png</texturesliderbarfocus>
+				<top>100</top>
+				<left>900</left>
+				<width>12</width>
+				<height>630</height>
+				<orientation>vertical</orientation>
 				<showonepage>false</showonepage>
 			</control>
 		</control>

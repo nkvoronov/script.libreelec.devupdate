@@ -87,11 +87,11 @@ def notify(msg, time=12000, error=False):
 def showbusy(f):
     @functools.wraps(f)
     def busy_wrapper(*args, **kwargs):
-        xbmc.executebuiltin("ActivateWindow(busydialog)")
+        xbmc.executebuiltin("ActivateWindow(busydialognocancel)")
         try:
             return f(*args, **kwargs)
         finally:
-            xbmc.executebuiltin("Dialog.Close(busydialog)")
+            xbmc.executebuiltin("Dialog.Close(busydialognocancel)")
     return busy_wrapper
 
 

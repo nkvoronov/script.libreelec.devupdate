@@ -32,21 +32,18 @@ class BuildURLError(Exception):
 
 
 class Build(object):
-    """Holds information about an ELEC build and defines how to compare them,
-       produce a unique hash for dictionary keys, and print them.
-    """
     DATETIME_FMT = '%Y%m%d%H%M%S'
 
     def __init__(self, _datetime, version):
         self._version = version
+        self._is_release = False
+        log.log("version - {}".format(version))
         if isinstance(_datetime, datetime):
             self._datetime = _datetime
         else:
             try:
                 self._datetime = datetime.strptime(_datetime, self.DATETIME_FMT)
             except TypeError:
-                # Work around an issue with datetime.strptime when the script
-                # is run a second time.
                 dt = time.strptime(_datetime, self.DATETIME_FMT)[0:6]
                 self._datetime = datetime(*(dt))
 
@@ -78,6 +75,10 @@ class Build(object):
     def version(self):
         return self._version
 
+    @property
+    def is_release(self):
+        return self._is_release
+
 
 class Release(Build):
     """Subclass of Build for official releases.
@@ -90,57 +91,23 @@ class Release(Build):
 
     def __init__(self, version):
         self.release_str = version
-        self.maybe_get_tags()
-        if version in self.tags:
-            self._has_date = True
-            Build.__init__(self, self.tags[version][:19], version)
-        else:
-            self._has_date = False
+        log.log("version - {}".format(version))
+        self._has_date = True
+        Build.__init__(self, '2016-04-06T17:26:00', version)
+        self._is_release = True
         self.release = [int(p) for p in version.split('.')]
+        log.log("release - {}".format(self.release))
 
     def is_valid(self):
         return self._has_date and self.release >= self.MIN_VERSION
 
     __nonzero__ = is_valid
 
-    @classmethod
-    def tag_match(cls, tag, attrs):
-        return (tag == 'relative-time' or
-               ('class' in attrs and attrs['class'] == 'tag-name'))
+    def __lt__(self, other):
+        return self.version < other.version
 
-    @classmethod
-    def pagination_match(cls, tag, attrs):
-        return (tag == 'div' and
-               ('class' in attrs and attrs['class'] == 'pagination'))
-
-    @classmethod
-    def get_tags_page_dict(cls, html):
-        soup = BeautifulSoup(html, 'html.parser',
-                             parse_only=SoupStrainer(cls.tag_match))
-        iter_contents = iter(soup.contents)
-        return dict((unicode(iter_contents.next().string), tag['datetime'])
-                    for tag in iter_contents)
-
-    @classmethod
-    def maybe_get_tags(cls):
-        if cls.tags is None:
-            cls.tags = {}
-            releases_url = "http://github.com/{dist}/{dist}.tv/tags".format(
-                                dist=libreelec.dist())
-            html = requests.get(releases_url).text
-            while True:
-                cls.tags.update(cls.get_tags_page_dict(html))
-                soup = BeautifulSoup(html, 'html.parser',
-                                     parse_only=SoupStrainer(cls.pagination_match))
-                next_page_link = soup.find('a', text='Next')
-                if next_page_link:
-                    href = next_page_link['href']
-                    version = [int(p) for p in href.split('=')[-1].split('.')]
-                    if version < cls.MIN_VERSION:
-                        break
-                    html = requests.get(href).text
-                else:
-                    break
+    def __gt__(self, other):
+        return self.version > other.version
 
     def __repr__(self):
         return "{}('{}')".format("Release", self.release_str)
@@ -151,6 +118,7 @@ class BuildLinkBase(object):
     def __init__(self, baseurl, link):
         # Set the absolute URL
         link = link.strip()
+        log.log("link - {}".format(link))
         scheme, netloc, path = urlparse.urlparse(link)[:3]
         if not scheme:
             # Construct the full url
@@ -163,6 +131,7 @@ class BuildLinkBase(object):
                 link = urlparse.urlunparse((scheme, "dl.dropbox.com", path,
                                             None, None, None))
             self.url = link
+        log.log("url - {}".format(self.url))
 
     def remote_file(self):
         response = requests.get(self.url, stream=True, timeout=timeout,
@@ -247,8 +216,9 @@ class BuildLinkExtractor(BaseExtractor):
 
     def _create_link(self, link):
         href = link['href']
+        log.log("href - {}".format(href))
+        log.log("match - {}".format(*self.build_re.match(href).groups()[:2]))
         return BuildLink(self.url, href, *self.build_re.match(href).groups()[:2])
-
 
 class DropboxBuildLinkExtractor(BuildLinkExtractor):
     CSS_CLASS = 'filename-link'
@@ -257,31 +227,14 @@ class YDBuildLinkExtractor(BuildLinkExtractor):
     BUILD_RE = ".*{dist}.*-{arch}-[\d\.]+-(\d+)-r\d+[a-z]*-g([0-9a-z]+)\.tar(|\.bz2)"
 
 class ReleaseLinkExtractor(BuildLinkExtractor):
-    """Class to extract release links from a URL.
-
-       Overrides _create_link to return a ReleaseLink for each link.
-    """
     BUILD_RE = ".*{dist}.*-{arch}-([\d\.]+)\.tar(|\.bz2)"
     BASE_URL = None
 
     def _create_link(self, link):
         href = link['href']
-        baseurl = self.BASE_URL if self.BASE_URL is not None else self.url
-        return ReleaseLink(baseurl, href, self.build_re.match(href).group(1))
-
-
-class OfficialReleaseLinkExtractor(ReleaseLinkExtractor):
-    BASE_URL = "http://releases.{dist}.tv".format(dist=libreelec.dist())
-
-
-class DualAudioReleaseLinkExtractor(ReleaseLinkExtractor):
-    BUILD_RE = ".*{dist}-{arch}.DA-([\d\.]+)\.tar(|\.bz2)"
-
-
-class MilhouseBuildLinkExtractor(BuildLinkExtractor):
-    BUILD_RE = ("{dist}-{arch}-(?:\d+\.\d+-|)"
-                "Milhouse-(\d+)-(?:r|%23)(\d+[a-z]*)-g[0-9a-z]+\.tar(|\.bz2)")
-
+        log.log("href - {}".format(href))
+        log.log("match - {}".format(self.build_re.match(href).group(1)))
+        return ReleaseLink(self.url, href, self.build_re.match(href).group(1))
 
 class BuildInfo(object):
     """Class to hold the short summary of a build and the full details."""
@@ -298,73 +251,11 @@ class BuildDetailsExtractor(BaseExtractor):
     def get_text(self):
         return ""
 
-
-class MilhouseBuildDetailsExtractor(BuildDetailsExtractor):
-    """Class for extracting the full build details for a Milhouse build.
-       from the release post on the Kodi forum.
-    """
-    def get_text(self):
-        soup = BeautifulSoup(self._text(), 'html.parser')
-        pid = urlparse.parse_qs(urlparse.urlparse(self.url).query)['pid'][0]
-        post_div_id = "pid_{}".format(pid)
-        post = soup.find('div', 'post-body', id=post_div_id)
-
-        text_maker = html2text.HTML2Text()
-        text_maker.ignore_links = True
-        text_maker.ul_item_mark = '-'
-
-        text = text_maker.handle(unicode(post))
-
-        text = re.search(r"(Build Highlights:.*)", text, re.DOTALL).group(1)
-        text = re.sub(r"(Build Highlights:)", r"[B]\1[/B]", text)
-        text = re.sub(r"(Build Details:)", r"[B]\1[/B]", text)
-
-        return text
-
-
 class BuildInfoExtractor(BaseExtractor):
     """Default build info extractor class for all build sources which just creates
        an empty dictionary."""
     def get_info(self):
         return {}
-
-
-class MilhouseBuildInfoExtractor(BuildInfoExtractor):
-    """Class for creating a dictionary of BuildInfo objects for Milhouse builds
-       keyed on the build version."""
-    URL_FMT = "http://forum.kodi.tv/showthread.php?tid={}"
-    R = re.compile("#(\d{4}[a-z]?).*?\((.+)\)")
-
-    def _get_info(self, soup):
-        for post in soup.find_all('div', 'post-body', limit=3):
-            for ul in post('ul'):
-                for li in ul('li'):
-                    m = self.R.match(li.get_text())
-                    if m:
-                        url = li.find('a', text="Release post")['href']
-                        yield m.group(1), BuildInfo(m.group(2),
-                                                    MilhouseBuildDetailsExtractor(url))
-
-    def get_info(self):
-        soup = BeautifulSoup(self._text(), 'html.parser')
-        return dict(self._get_info(soup))
-
-    @classmethod
-    def from_thread_id(cls, thread_id):
-        """Create a Milhouse build info extractor from the thread id number."""
-        url = cls.URL_FMT.format(thread_id)
-        return cls(url)
-
-
-def get_milhouse_build_info_extractors():
-    if arch.startswith("RPi"):
-        threads = [269814, 298461]
-    else:
-        threads = [269815, 298462]
-
-    for thread_id in threads:
-        yield MilhouseBuildInfoExtractor.from_thread_id(thread_id)
-
 
 class CommitInfoExtractor(BuildInfoExtractor):
     """Class used by development build sources for extracting the git commit messages
@@ -416,22 +307,6 @@ class BuildsURL(object):
 
     def __repr__(self):
         return "{}('{}')".format(self.__class__.__name__, self.url)
-
-
-class MilhouseBuildsURL(BuildsURL):
-    def __init__(self, subdir="master"):
-        self.subdir = subdir
-        url = "http://milhouse.{dist}.tv/builds/".format(dist=libreelec.dist().lower())
-        super(MilhouseBuildsURL, self).__init__(
-            url, os.path.join(subdir, arch.split('.')[0]),
-            MilhouseBuildLinkExtractor, list(get_milhouse_build_info_extractors()))
-
-    def __repr__(self):
-        return "{}('{}')".format(self.__class__.__name__, self.subdir)
-
-
-dual_audio_builds = BuildsURL("http://openelec-dualaudio.subcarrier.de/OpenELEC-DualAudio/",
-                              subdir=arch, extractor=DualAudioReleaseLinkExtractor)
 
 
 def get_installed_build():

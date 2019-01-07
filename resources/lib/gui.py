@@ -264,8 +264,12 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
         self._build_list.reset()
         for build in builds:
             li = xbmcgui.ListItem()
-            li.setLabel(build.version)
-            li.setLabel2(build.date)
+            if build.is_release:
+                li.setLabel('')
+                li.setLabel2(build.version)
+            else:
+                li.setLabel(build.version)
+                li.setLabel2(build.date)
             if build > self._installed_build:
                 icon = 'upgrade'
             elif build < self._installed_build:
