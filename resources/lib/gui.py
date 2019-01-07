@@ -274,7 +274,7 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
             elif build < self._installed_build:
                 icon = 'downgrade'
             else:
-                icon = 'installed'
+                icon = 'overlaywatched'
             li.setIconImage("{}.png".format(icon))
             self._build_list.addItem(li)
         self.setFocusId(self.BUILD_LIST_ID)
