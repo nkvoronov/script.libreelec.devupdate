@@ -120,28 +120,6 @@ def set_running():
 def set_not_running():
     xbmcgui.Window(10000).clearProperty('DevUpdateRunning')
 
-
-def install_cmdline_script():
-    """ Creates a symbolic link to the command line download script
-    in the root user home directory. The script can then be invoked
-    by running:
-
-        ./devupdate
-    """
-
-    SCRIPT_NAME = "download.py"
-    script_path = os.path.join(addon.src_path, SCRIPT_NAME)
-
-    SYMLINK_NAME = "devupdate"
-    symlink_path = os.path.join(os.path.expanduser('~'), SYMLINK_NAME)
-
-    log.log("Installing command line script {}".format(symlink_path))
-
-    funcs.make_executable(script_path)
-
-    funcs.maybe_create_symlink(script_path, symlink_path)
-
-
 def maybe_schedule_extlinux_update():
     if (not libreelec.ARCH.startswith('RPi') and
         addon.get_bool_setting('update_extlinux')):

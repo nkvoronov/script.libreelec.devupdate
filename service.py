@@ -20,5 +20,3 @@ funcs.maybe_update_extlinux()
 xbmc.executebuiltin(utils.make_runscript('confirm'))
 
 utils.setup_build_check()
-
-utils.install_cmdline_script()
