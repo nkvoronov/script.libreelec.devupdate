@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addon id="script.libreelec.devupdate"
 		name="LibreELEC Dev Update"
-		version="14.44.0"
+		version="14.44.1"
 		provider-name="Leopold, YLLOW_DRAGON">
 	<requires>
 		<import addon="xbmc.python" version="2.25.0"/>
