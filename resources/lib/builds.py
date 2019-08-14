@@ -136,12 +136,18 @@ class BuildLinkBase(object):
         try:
             self.size = int(response.headers['Content-Length'])
         except KeyError:
+            log.log("Header key Content-Length not found")
             self.size = 0
 
         # Get the actual filename
         self.filename = unquote(os.path.basename(urlparse.urlparse(response.url).path))
+
         # Fix filename
-        # self.filename = re.findall("filename=(.+)", response.headers['Content-Disposition'])[0]
+        try:
+            newfilename = re.findall("filename=(.+)", response.headers['Content-Disposition'])[0]
+            self.filename = newfilename
+        except KeyError:
+            log.log("Header key Content-Disposition not found")
 
         name, ext = os.path.splitext(self.filename)
         self.tar_name = self.filename if ext == '.tar' else name
