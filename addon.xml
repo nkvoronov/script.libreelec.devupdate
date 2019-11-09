@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addon id="script.libreelec.devupdate"
 		name="LibreELEC Dev Update"
-		version="14.44.2"
+		version="14.44.3"
 		provider-name="Leopold, YLLOW_DRAGON">
 	<requires>
 		<import addon="xbmc.python" version="2.25.0"/>
@@ -16,14 +16,15 @@
 	<extension point="xbmc.addon.metadata">
 		<platform>all</platform>
 		<summary>Unofficial LibreELEC updater</summary>
-		<description>This add-on downloads LibreELEC update files ready to be installed on the next reboot. Select a predefined source or a custom source defined in the add-on settings, then choose from a list of available builds. Some sources provide full build details which can be viewed by pressing 'Info'.</description>
-		<disclaimer>Development builds often have major bugs and crashes can happen quite often. Always backup your userdata folder when installing development builds.</disclaimer>
-		<summary lang="en">Unofficial LibreELEC updater</summary>
-		<summary lang="ru">Неоффициальная программа обновления Open(Libre)ELEC </summary>
-		<description lang="en">This add-on downloads LibreELEC update files ready to be installed on the next reboot. Use the add-on settings to choose the source URL or provide your own. Run the add-on to select from a list of builds available at the URL.</description>
-		<description lang="ru">Это дополнение скачивает файлы обновлений LibreELEC, которые будут готовы к установке при следующей перезагрузке. Используйте дополнение, в настройках выбрать ресурс или установить свой собственный. Запустите адон, чтобы выбрать нужную сборку из списка сборок доступных в данном ресурсе.</description>
-		<disclaimer lang="en">Development builds often have major bugs and crashes can happen quite often. Always backup your userdata folder when installing development builds.</disclaimer>
-		<disclaimer lang="ru">Сборки в разработке часто имеют некоторые ошибки и сбои могут происходить довольно часто. Всегда делайте резервную копию ваших пользовательских данных при установке сборок в разработке.</disclaimer>
+		<summary lang="en_GB">Unofficial LibreELEC updater</summary>
+		<summary lang="ru_RU">Неоффициальная программа обновления LibreELEC </summary>
+		<summary lang="uk_UA">Неоффіціальная програма оновлення LibreELEC </summary>
+		<description lang="en_GB">This add-on downloads LibreELEC update files ready to be installed on the next reboot. Use the add-on settings to choose the source URL or provide your own. Run the add-on to select from a list of builds available at the URL.</description>
+		<description lang="ru_RU">Это дополнение скачивает файлы обновлений LibreELEC, которые будут готовы к установке при следующей перезагрузке. Используйте дополнение, в настройках выбрать ресурс или установить свой собственный. Запустите дополнение, чтобы выбрать нужную сборку из списка сборок доступных в данном ресурсе.</description>
+		<description lang="uk_UA">Це доповнення закачує файли оновлень LibreELEC, які будуть готові до установки при наступному перезавантаженні. Використовуйте додаток, в настройках вибрати ресурс або встановити свій власний. Запустіть добовнення, щоб вибрати потрібну збірку зі списку збірок доступних в даному ресурсі.</description>
+		<disclaimer lang="en_GB">Development builds often have major bugs and crashes can happen quite often. Always backup your userdata folder when installing development builds.</disclaimer>
+		<disclaimer lang="ru_RU">Сборки в разработке часто имеют некоторые ошибки и сбои могут происходить довольно часто. Всегда делайте резервную копию ваших пользовательских данных при установке сборок в разработке.</disclaimer>
+		<disclaimer lang="uk_UA">Збірки в розробці часто мають деякі помилки і збої можуть відбуватися досить часто. Завжди робіть резервну копію ваших даних користувача при установці збірок в розробці.</disclaimer>
 		<forum></forum>
 		<website></website>
 		<email>nkvoronov@gmail.com</email>
