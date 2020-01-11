@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addon id="script.libreelec.devupdate"
 		name="LibreELEC Dev Update"
-		version="14.44.3"
+		version="14.44.4"
 		provider-name="Leopold, YLLOW_DRAGON">
 	<requires>
 		<import addon="xbmc.python" version="2.25.0"/>
@@ -30,5 +30,8 @@
 		<email>nkvoronov@gmail.com</email>
 		<source>https://github.com/nkvoronov/script.libreelec.devupdate.git</source>
 		<license>GNU GENERAL PUBLIC LICENSE. Version 3, 29 June 2007</license>
+		<assets>
+			<icon>resources/icon.png</icon>
+		</assets>
 	</extension>
 </addon>
