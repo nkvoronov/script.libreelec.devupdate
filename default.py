@@ -31,7 +31,7 @@ from resources.lib import (progress, script_exceptions, utils, builds, libreelec
                            rpi, addon, log, gui, funcs)
 from resources.lib.addon import L10n
 
-TEMP_PATH = xbmc.translatePath("special://temp/")
+TEMP_PATH = xbmcvfs.translatePath("special://temp/")
 
 
 class Main(object):

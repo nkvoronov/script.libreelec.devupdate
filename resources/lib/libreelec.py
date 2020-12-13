@@ -17,12 +17,13 @@ UPDATE_DIR = os.path.join(os.path.expanduser('~'), '.update')
 if OS_RELEASE['NAME'] != "LibreELEC":
     try:
         import xbmc
+        import xbmcvfs
     except ImportError:
         # Enables testing standalone script outside Kodi
         UPDATE_DIR = os.path.expanduser('~')
     else:
         # Enables testing in non OpenELEC Kodi
-        UPDATE_DIR = xbmc.translatePath("special://temp/")
+        UPDATE_DIR = xbmcvfs.translatePath("special://temp/")
 
 UPDATE_IMAGES = ('SYSTEM', 'KERNEL')
 

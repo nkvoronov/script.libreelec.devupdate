@@ -1,4 +1,4 @@
-import xbmc, xbmcaddon
+import xbmc, xbmcvfs, xbmcaddon
 
 __addon = xbmcaddon.Addon('script.libreelec.devupdate')
 
@@ -16,6 +16,6 @@ def get_int_setting(setting):
 
 name = info('name')
 version = info('version')
-data_path = xbmc.translatePath(info('profile'))
-src_path = xbmc.translatePath(info('path'))
+data_path = xbmcvfs.translatePath(info('profile'))
+src_path = xbmcvfs.translatePath(info('path'))
 icon_path = info('icon')
