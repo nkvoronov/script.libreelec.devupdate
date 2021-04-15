@@ -27,11 +27,19 @@ from contextlib import closing
 import xbmc, xbmcgui, xbmcaddon, xbmcvfs
 import requests
 
-from resources.lib import (progress, script_exceptions, utils, builds, libreelec,
-                           rpi, addon, log, gui, funcs)
+from resources.lib import progress
+from resources.lib import script_exceptions
+from resources.lib import utils
+from resources.lib import builds
+from resources.lib import libreelec
+from resources.lib import rpi
+from resources.lib import addon
+from resources.lib import log
+from resources.lib import gui
+from resources.lib import funcs
 from resources.lib.addon import L10n
 
-TEMP_PATH = xbmcvfs.translatePath("special://temp/")
+TEMP_PATH = xbmcvfs.translatePath('special://temp/')
 
 
 class Main(object):
@@ -54,7 +62,7 @@ class Main(object):
         log.log("Starting")
 
         builds.arch = utils.get_arch()
-        log.log("Set arch to {}".format(builds.arch))
+        log.log('Set arch to {}'.format(builds.arch))
 
         if addon.get_bool_setting('set_timeout'):
             builds.timeout = float(addon.get_setting('timeout'))
@@ -100,26 +108,24 @@ class Main(object):
 
         self.selected_source = build_select.selected_source
         addon.set_setting('source_name', self.selected_source)
-        log.log("Selected source: " + str(self.selected_source))
+        log.log('Selected source: ' + str(self.selected_source))
 
-        if not build_select:
-            log.log("No build selected")
+        if not build_select.selected_build:
+            log.log('No build selected')
             sys.exit(0)
 
         selected_build = build_select.selected_build
-        log.log("Selected build: " + str(selected_build))
-
+        log.log('Selected build: ' + str(selected_build))
         build_str = utils.format_build(selected_build)
-        msg = L10n(32003).format(utils.format_build(self.installed_build),
-                                 build_str)
+        msg = L10n(32003).format(utils.format_build(self.installed_build), build_str)
 
         if selected_build < self.installed_build:
-            args = (L10n(32004), L10n(32005), msg)
+            args = (L10n(32004), L10n(32005) + '\n' + msg)
         elif selected_build > self.installed_build:
-            args = (L10n(32001), L10n(32002), msg)
+            args = (L10n(32001), L10n(32002) + '\n' + msg)
         else:
             msg = L10n(32007).format(build_str)
-            args = (L10n(32006), msg, L10n(32008))
+            args = (L10n(32006), msg + '\n' + L10n(32008))
 
         if not utils.yesno(*args):
             sys.exit(0)
@@ -135,12 +141,12 @@ class Main(object):
             self.archive_dir = os.path.join(self.archive_root, str(self.selected_source))
             log.log("Archive builds to " + self.archive_dir)
             if not xbmcvfs.exists(self.archive_root):
-                log.log("Unable to access archive")
+                log.log('Unable to access archive')
                 utils.ok(L10n(32009), L10n(32010).format(self.archive_root), L10n(32011))
                 addon.open_settings()
                 sys.exit(1)
             elif not xbmcvfs.mkdir(self.archive_dir):
-                log.log("Unable to create directory in archive")
+                log.log('Unable to create directory in archive')
                 utils.ok(L10n(32009), L10n(32012).format(self.archive_dir), L10n(32013))
                 sys.exit(1)
 
@@ -165,15 +171,15 @@ class Main(object):
             if (os.path.isfile(self.download_path) and
                     os.path.getsize(self.download_path) == size):
                     # Skip the download if the file exists with the correct size.
-                log.log("Skipping download")
+                log.log('Skipping download')
             else:
                 try:
-                    log.log("Starting download of {} to {}".format(self.selected_build.url,
+                    log.log('Starting download of {} to {}'.format(self.selected_build.url,
                                                                    self.download_path))
                     with progress.FileProgress(L10n(32014), remote_file, self.download_path,
                                                size, self.background) as downloader:
                         downloader.start()
-                    log.log("Completed download")
+                    log.log('Completed download')
                 except script_exceptions.Canceled:
                     sys.exit(0)
                 except requests.RequestException as e:
@@ -186,12 +192,12 @@ class Main(object):
             if self.selected_build.compressed:
                 try:
                     bf = open(self.download_path, 'rb')
-                    log.log("Starting decompression of " + self.download_path)
+                    log.log('Starting decompression of ' + self.download_path)
                     with progress.DecompressProgress(L10n(32015),
                                                      bf, self.temp_tar_path, size,
                                                      self.background) as decompressor:
                         decompressor.start()
-                    log.log("Completed decompression")
+                    log.log('Completed decompression')
                 except script_exceptions.Canceled:
                     sys.exit(0)
                 except script_exceptions.WriteError as e:
@@ -205,14 +211,14 @@ class Main(object):
 
             self.maybe_copy_to_archive()
 
-            log.log("Moving tar file to " + self.update_tar_path)
+            log.log('Moving tar file to ' + self.update_tar_path)
             os.renames(self.temp_tar_path, self.update_tar_path)
 
         addon.set_setting('update_pending', 'true')
 
     def copy_from_archive(self):
         if self.archive and xbmcvfs.exists(self.archive_tar_path):
-            log.log("Skipping download and decompression")
+            log.log('Skipping download and decompression')
 
             archive = xbmcvfs.File(self.archive_tar_path)
             try:
@@ -230,7 +236,7 @@ class Main(object):
 
     def maybe_copy_to_archive(self):
         if self.archive and not xbmcvfs.exists(self.archive_tar_path):
-            log.log("Archiving tar file to {}".format(self.archive_tar_path))
+            log.log('Archiving tar file to {}'.format(self.archive_tar_path))
 
             tar = open(self.temp_tar_path)
             size = os.path.getsize(self.temp_tar_path)
@@ -241,7 +247,7 @@ class Main(object):
                                            self.background) as extractor:
                     extractor.start()
             except script_exceptions.Canceled:
-                log.log("Archive copy canceled")
+                log.log('Archive copy canceled')
                 xbmcvfs.delete(self.archive_tar_path)
             except script_exceptions.WriteError as e:
                 utils.write_error(self.archive_tar_path, str(e))
@@ -251,7 +257,8 @@ class Main(object):
         if not self.verify_files:
             return
 
-        log.log("Verifying update file")
+        log.log('Verifying update file')
+        size = self.selected_build.size
         with closing(tarfile.open(self.update_tar_path, 'r')) as tf:
             tar_names = tf.getnames()
 
@@ -259,31 +266,31 @@ class Main(object):
                 path_in_tar = next(name for name in tar_names
                                    if name.endswith(os.path.join('target', update_image)))
                 ti = tf.extractfile(path_in_tar)
+                size = tf.getmember(path_in_tar).size
                 temp_image_path = os.path.join(TEMP_PATH, update_image)
+                log.log(str(temp_image_path))
                 try:
-                    with progress.FileProgress(L10n(32018), ti, temp_image_path, ti.size,
+                    with progress.FileProgress(L10n(32018), ti, temp_image_path, size,
                                                self.background) as extractor:
                         extractor.start()
-                    log.log("Extracted " + temp_image_path)
+                    log.log('Extracted ' + temp_image_path)
                 except script_exceptions.Canceled:
                     return
                 except script_exceptions.WriteError as e:
                     utils.write_error(temp_image_path, str(e))
                     return
 
-                md5sum = tf.extractfile(path_in_tar + '.md5').read().split()[0]
-                log.log("{}.md5 file = {}".format(update_image, md5sum))
+                md5sum = tf.extractfile(path_in_tar + '.md5').read().split()[0].decode('utf-8')
+                log.log('{}.md5 file = {}'.format(update_image, md5sum))
 
                 if not progress.md5sum_verified(md5sum, temp_image_path,
                                                 self.background):
-                    log.log("{} md5 mismatch!".format(update_image))
-                    utils.ok(L10n(32019).format(update_image),
-                             self.selected_build.filename,
-                             L10n(32020).format(update_image), L10n(32021))
+                    log.log('{} md5 mismatch!'.format(update_image))
+                    utils.ok(L10n(32019).format(update_image), self.selected_build.filename + '\n' + L10n(32020).format(update_image) + '\n' + L10n(32021))
                     utils.remove_update_files()
                     return
                 else:
-                    log.log("{} md5 is correct".format(update_image))
+                    log.log('{} md5 is correct'.format(update_image))
 
                 funcs.remove_file(temp_image_path)
 
@@ -294,7 +301,7 @@ class Main(object):
         do_notify = False
 
         if addon.get_bool_setting('confirm_reboot'):
-            if utils.yesno(L10n(32022), " ", L10n(32024).format(build_str)):
+            if utils.yesno(L10n(32022), L10n(32024).format(build_str)):
                 xbmc.restart()
             else:
                 do_notify = True
@@ -312,7 +319,7 @@ class Main(object):
 
 
 def new_build_check():
-    log.log("Checking for a new build")
+    log.log('Checking for a new build')
 
     check_official = addon.get_bool_setting('check_official')
     check_interval = addon.get_int_setting('check_interval')
@@ -322,14 +329,14 @@ def new_build_check():
     try:
         installed_build = builds.get_installed_build()
     except:
-        log.log("Unable to get installed build so exiting")
+        log.log('Unable to get installed build so exiting')
         sys.exit(1)
 
     source = addon.get_setting('source_name')
-    if (isinstance(installed_build, builds.Release) and source == "Official Releases"
+    if (isinstance(installed_build, builds.Release) and source == 'Official Releases'
         and not check_official):
         # Don't do the job of the official auto-update system.
-        log.log("Skipping build check - official release")
+        log.log('Skipping build check - official release')
     else:
         builds.arch = utils.get_arch()
 
@@ -340,7 +347,7 @@ def new_build_check():
         try:
             build_url = build_sources[source]
         except KeyError:
-            log.log("{} is not a valid source".format(source))
+            log.log('{} is not a valid source'.format(source))
             return
 
         log.log("Checking {}".format(build_url.url))
@@ -348,15 +355,11 @@ def new_build_check():
         latest = builds.latest_build(source)
         if latest and latest > installed_build:
             if utils.do_show_dialog():
-                log.log("New build {} is available, "
-                        "prompting to show build list".format(latest))
+                log.log('New build {} is available, '
+                        'prompting to show build list'.format(latest))
 
                 if utils.yesno(
-                        addon.name,
-                        line1=L10n(32027).format(utils.format_build(latest)),
-                        line2=L10n(32028).format(utils.format_build(installed_build)),
-                        line3=L10n(32029),
-                        autoclose=autoclose_ms):
+                        addon.name, L10n(32027).format(utils.format_build(latest)) + '\n' + L10n(32028).format(utils.format_build(installed_build)) + '\n' + L10n(32029), autoclose=autoclose_ms):
                     with Main() as main:
                         main.start()
             else:
@@ -365,13 +368,13 @@ def new_build_check():
 
 
 log.log_version()
-log.log("Script arguments: {}".format(sys.argv))
+log.log('Script arguments: {}'.format(sys.argv))
 
 if addon.get_bool_setting('set_date_format'):
     builds.date_fmt = funcs.strftime_fmt(addon.get_setting('date_format'))
 else:
     builds.date_fmt = xbmc.getRegion('dateshort')
-log.log("Set date format to {}".format(builds.date_fmt))
+log.log('Set date format to {}'.format(builds.date_fmt))
 
 if len(sys.argv) > 1:
     if sys.argv[1] == 'checkperiodic':
@@ -391,7 +394,7 @@ if len(sys.argv) > 1:
             utils.maybe_confirm_installation(selected, installed_build)
             funcs.remove_notify_file()
         else:
-            log.log("No new installation")
+            log.log('No new installation')
 else:
     with Main() as main:
         main.start()

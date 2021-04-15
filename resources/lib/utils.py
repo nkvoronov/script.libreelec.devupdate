@@ -5,7 +5,7 @@ from __future__ import division
 import os
 import sys
 import functools
-from urlparse import urlparse
+from urllib.parse import urlparse
 
 import xbmc, xbmcaddon, xbmcgui
 
@@ -39,13 +39,13 @@ def write_error(path, msg):
 
 def decompress_error(path, msg):
     log.log_exception()
-    ok(L10n(32049), L10n(32050), " ", msg)
+    ok(L10n(32049), L10n(32050), ' ', msg)
 
 
 def check_update_files(selected, force_dialog=False):
-    log.log("Checking for an existing update file")
+    log.log('Checking for an existing update file')
     if funcs.update_files():
-        log.log("An update file is in place")
+        log.log('An update file is in place')
 
         if selected:
             build_str = format_build(selected[1])
@@ -55,11 +55,11 @@ def check_update_files(selected, force_dialog=False):
             msg = L10n(32053)
 
         if do_show_dialog() or force_dialog:
-            if yesno(addon.name, msg, " ", L10n(32055)):
+            if yesno(addon.name, msg + '\n' + L10n(32055)):
                 xbmc.restart()
                 sys.exit(0)
         else:
-            notify(" ".join((msg, L10n(32056))))
+            notify(' '.join((msg, L10n(32056))))
 
         return True
     else:
@@ -78,20 +78,20 @@ def get_arch():
 
 
 def notify(msg, time=12000, error=False):
-    log.log("Notifying: {}".format(msg))
+    log.log('Notifying: {}'.format(msg))
     if error:
-        msg = "[COLOR red]{}[/COLOR]".format(L10n(32060)).format(msg)
+        msg = '[COLOR red]{}[/COLOR]'.format(L10n(32060)).format(msg)
     notification(addon.name, msg, addon.icon_path, time)
 
 
 def showbusy(f):
     @functools.wraps(f)
     def busy_wrapper(*args, **kwargs):
-        xbmc.executebuiltin("ActivateWindow(busydialognocancel)")
+        xbmc.executebuiltin('ActivateWindow(busydialognocancel)')
         try:
             return f(*args, **kwargs)
         finally:
-            xbmc.executebuiltin("Dialog.Close(busydialognocancel)")
+            xbmc.executebuiltin('Dialog.Close(busydialognocancel)')
     return busy_wrapper
 
 
@@ -104,19 +104,19 @@ def ensure_trailing_slash(path):
     return path if path.endswith('/') else path + '/'
 
 
-@log.with_logging(msg_error="Unable to check if another instance is running")
+@log.with_logging(msg_error='Unable to check if another instance is running')
 def is_running():
     running = xbmcgui.Window(10000).getProperty('DevUpdateRunning') == 'True'
-    log.log("Another instance is running" if running else "No other instance is running")
+    log.log('Another instance is running' if running else 'No other instance is running')
     return running
 
 
-@log.with_logging("Set running flag", "Unable to set running flag")
+@log.with_logging('Set running flag', 'Unable to set running flag')
 def set_running():
     xbmcgui.Window(10000).setProperty('DevUpdateRunning', 'True')
 
 
-@log.with_logging("Cleared running flag", "Unable to clear running flag")
+@log.with_logging('Cleared running flag', 'Unable to clear running flag')
 def set_not_running():
     xbmcgui.Window(10000).clearProperty('DevUpdateRunning')
 
@@ -131,7 +131,7 @@ def maybe_run_backup():
     if backup == 0:
         do_backup = False
     elif backup == 1:
-        do_backup = yesno(L10n(32061), L10n(32062), L10n(32063))
+        do_backup = yesno(L10n(32061), L10n(32062) + ' ' + L10n(32063))
         log.log("Backup requested")
     elif backup == 2:
         do_backup = True
@@ -146,28 +146,28 @@ def maybe_run_backup():
 
 
 def make_runscript(arg):
-    return "RunScript({}, {})".format(addon.info('id'), arg)
+    return 'RunScript({}, {})'.format(addon.info('id'), arg)
 
 
 def format_build(build):
-    return "[COLOR=lightskyblue][B]{}[/COLOR][/B]".format(build)
+    return '[COLOR=lightskyblue][B]{}[/COLOR][/B]'.format(build)
 
 
 def setup_build_check():
     xbmc.executebuiltin(make_runscript('checkonboot'))
     if not addon.get_bool_setting('check_onbootonly'):
         interval = addon.get_int_setting('check_interval')
-        log.log("Starting build check timer for every {:d} hour{}"
+        log.log('Starting build check timer for every {:d} hour{}'
                 .format(interval, 's' if interval > 1 else ''))
-        cmd = ("AlarmClock(devupdatecheck, {}, {:02d}:00:00, silent, loop)".
+        cmd = ('AlarmClock(devupdatecheck, {}, {:02d}:00:00, silent, loop)'.
                format(make_runscript('checkperiodic'), interval))
         xbmc.executebuiltin(cmd)
 
 
 def maybe_confirm_installation(selected, installed_build):
     source, selected_build = selected
-    log.log("Selected build: {}".format(selected_build))
-    log.log("Installed build: {}".format(installed_build))
+    log.log('Selected build: {}'.format(selected_build))
+    log.log('Installed build: {}'.format(installed_build))
 
     build_str = format_build(selected_build)
     if installed_build == selected_build:
@@ -189,7 +189,7 @@ def add_custom_sources(sources):
             try:
                 build_type_index = int(build_type)
             except ValueError:
-                log.log_error("Invalid build type index '{}'".format(build_type))
+                log.log_error('Invalid build type index "{}"'.format(build_type))
                 build_type_index = 0
 
             if build_type_index < 2:

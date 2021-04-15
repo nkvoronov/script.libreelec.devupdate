@@ -7,17 +7,16 @@ import _strptime
 import time
 import re
 import os
-import urlparse
+from urllib.parse import urlparse, urljoin, urlunparse, unquote
 from datetime import datetime
 from collections import OrderedDict
-from urllib2 import unquote
 
 from bs4 import BeautifulSoup, SoupStrainer
 import requests
 import html2text
 import json
 
-import libreelec, funcs, log
+from . import libreelec, funcs, log
 
 from .addon import L10n
 
@@ -65,7 +64,7 @@ class Build(object):
         return '{} ({})'.format(self.version, self.date)
 
     def __repr__(self):
-        return "{}('{}', '{}')".format("Build",
+        return "{}('{}', '{}')".format('Build',
                                        self._datetime.strftime(self.DATETIME_FMT),
                                        self.version)
 
@@ -90,11 +89,11 @@ class Release(Build):
 
     def __init__(self, version):
         self.release_str = version
-        log.log("version - {}".format(version))
+        log.log('version - {}'.format(version))
         Build.__init__(self, '2017-02-21T21:11:00', version)
         self._is_release = True
         self.release = [int(p) for p in version.split('.')]
-        log.log("release - {}".format(self.release))
+        log.log('release - {}'.format(self.release))
 
     def is_valid(self):
         return self.release >= self.MIN_VERSION
@@ -108,24 +107,24 @@ class Release(Build):
         return self.version > other.version
 
     def __repr__(self):
-        return "{}('{}')".format("Release", self.release_str)
+        return "{}('{}')".format('Release', self.release_str)
 
 
 class BuildLinkBase(object):
     def __init__(self, baseurl, link):
         # Set the absolute URL
         link = link.strip()
-        log.log("link - {}".format(link))
-        scheme, netloc, path = urlparse.urlparse(link)[:3]
+        log.log('link - {}'.format(link))
+        scheme, netloc, path = urlparse(link)[:3]
         if not scheme:
             # Construct the full url
             if not baseurl.endswith('/'):
                 baseurl += '/'
-            self.url = urlparse.urljoin(baseurl, link)
+            self.url = urljoin(baseurl, link)
         else:
-            if netloc == "www.dropbox.com":
+            if netloc == 'www.dropbox.com':
                 # Fix Dropbox url
-                link = urlparse.urlunparse((scheme, "dl.dropbox.com", path,
+                link = urlunparse((scheme, 'dl.dropbox.com', path,
                                             None, None, None))
             self.url = link
         log.log("url - {}".format(self.url))
@@ -136,18 +135,18 @@ class BuildLinkBase(object):
         try:
             self.size = int(response.headers['Content-Length'])
         except KeyError:
-            log.log("Header key Content-Length not found")
+            log.log('Header key Content-Length not found')
             self.size = 0
 
         # Get the actual filename
-        self.filename = unquote(os.path.basename(urlparse.urlparse(response.url).path))
+        self.filename = unquote(os.path.basename(urlparse(response.url).path))
 
         # Fix filename
         try:
-            newfilename = re.findall("filename=(.+)", response.headers['Content-Disposition'])[0]
+            newfilename = re.findall('filename=(.+)', response.headers['Content-Disposition'])[0]
             self.filename = newfilename
         except KeyError:
-            log.log("Header key Content-Disposition not found")
+            log.log('Header key Content-Disposition not found')
 
         name, ext = os.path.splitext(self.filename)
         self.tar_name = self.filename if ext == '.tar' else name
@@ -179,7 +178,7 @@ class BaseExtractor(object):
     def _response(self):
         response = requests.get(self.url, timeout=timeout)
         if not response:
-            msg = "Build URL error: status {}".format(response.status_code)
+            msg = 'Build URL error: status {}'.format(response.status_code)
             raise BuildURLError(msg)
         return response
 
@@ -194,8 +193,8 @@ class BaseExtractor(object):
 
 
 class BuildLinkExtractor(BaseExtractor):
-    BUILD_RE = (".*{dist}.*-{arch}-(?:\d+\.\d+-|)[a-zA-Z]+-(\d+)"
-                "-r\d+[a-z]*-g([0-9a-z]+)\.tar(|\.bz2)")
+    BUILD_RE = ('.*{dist}.*-{arch}-(?:\d+\.\d+-|)[a-zA-Z]+-(\d+)'
+                '-r\d+[a-z]*-g([0-9a-z]+)\.tar(|\.bz2)')
     CSS_CLASS = None
 
     def __iter__(self):
@@ -216,8 +215,8 @@ class BuildLinkExtractor(BaseExtractor):
 
     def _create_link(self, link):
         href = link['href']
-        log.log("href - {}".format(href))
-        log.log("match - {}".format(*self.build_re.match(href).groups()[:2]))
+        log.log('href - {}'.format(href))
+        log.log('match - {}'.format(*self.build_re.match(href).groups()[:2]))
         return BuildLink(self.url, href, *self.build_re.match(href).groups()[:2])
 
 class BuildLinkExtractorMultiPage(BuildLinkExtractor):
@@ -256,19 +255,19 @@ class DropboxBuildLinkExtractor(BuildLinkExtractor):
     CSS_CLASS = 'filename-link'
 
 class YDBuildLinkExtractor(BuildLinkExtractor):
-    BUILD_RE = ".*{dist}.*-{arch}-[\d\.]+-(\d+)-r\d+[a-z]*-g([0-9a-z]+)\.tar(|\.bz2)"
+    BUILD_RE = '.*{dist}.*-{arch}-[\d\.]+-(\d+)-r\d+[a-z]*-g([0-9a-z]+)\.tar(|\.bz2)'
 
 class YDBuildLinkExtractorAll(BuildLinkExtractorMultiPage):
-    BUILD_RE = ".*{dist}.*-{arch}-[\d\.]+-(\d+)-r\d+[a-z]*-g([0-9a-z]+)\.tar(|\.bz2)"
+    BUILD_RE = '.*{dist}.*-{arch}-[\d\.]+-(\d+)-r\d+[a-z]*-g([0-9a-z]+)\.tar(|\.bz2)'
 
 class ReleaseLinkExtractor(BuildLinkExtractor):
-    BUILD_RE = ".*{dist}.*-{arch}-([\d\.]+)\.tar(|\.bz2)"
+    BUILD_RE = '.*{dist}.*-{arch}-([\d\.]+)\.tar(|\.bz2)'
     BASE_URL = None
 
     def _create_link(self, link):
         href = link['href']
-        log.log("href - {}".format(href))
-        log.log("match - {}".format(self.build_re.match(href).group(1)))
+        log.log('href - {}'.format(href))
+        log.log('match - {}'.format(self.build_re.match(href).group(1)))
         return ReleaseLink(self.url, href, self.build_re.match(href).group(1))
 
 #BuildsInfo
@@ -291,7 +290,7 @@ class BuildInfoExtractor(BaseExtractor):
         return {}
 
 class CommitInfoExtractor(BuildInfoExtractor):
-    url = "https://api.github.com/repositories/1093060/commits?per_page=100"
+    url = 'https://api.github.com/repositories/1093060/commits?per_page=100'
 
     def get_info(self):
         return dict((commit['sha'][:7],
@@ -325,7 +324,7 @@ class BuildsURL(object):
 
     def add_subdir(self, subdir):
         self._add_slash()
-        self.url = urlparse.urljoin(self.url, subdir)
+        self.url = urljoin(self.url, subdir)
         self._add_slash()
 
     def _add_slash(self):
@@ -340,9 +339,9 @@ class BuildsURL(object):
 
 
 def get_installed_build():
-    DEVEL_RE = ".*-(\d+)-r\d+-g([a-z0-9]+)"
+    DEVEL_RE = '.*-(\d+)-r\d+-g([a-z0-9]+)'
 
-    if libreelec.OS_RELEASE['NAME'] in ("LibreELEC"):
+    if libreelec.OS_RELEASE['NAME'] in ('LibreELEC'):
         version = libreelec.OS_RELEASE['VERSION']
     else:
         # For testing on a non OpenELEC machine
@@ -359,12 +358,12 @@ def get_installed_build():
 def sources():
     _sources = OrderedDict()
 
-    _sources["YLLOW_DRAGON"] = BuildsURL(
-        "https://github.com/nkvoronov/{dist}.tv/releases".format(dist=libreelec.OS_RELEASE['NAME']),
+    _sources['YLLOW_DRAGON'] = BuildsURL(
+        'https://github.com/nkvoronov/{dist}.tv/releases'.format(dist=libreelec.OS_RELEASE['NAME']),
         extractor=YDBuildLinkExtractorAll)
 
-    _sources["LibreELEC.tv"] = BuildsURL(
-        "http://archive.{dist}.tv".format(dist=libreelec.dist()),
+    _sources['LibreELEC.tv'] = BuildsURL(
+        'http://archive.{dist}.tv'.format(dist=libreelec.dist()),
         extractor=ReleaseLinkExtractor)
 
     return _sources
@@ -380,7 +379,7 @@ def latest_build(source):
         return build_url.latest()
 
 
-@log.with_logging(msg_error="Unable to create build object from the notify file")
+@log.with_logging(msg_error='Unable to create build object from the notify file')
 def get_build_from_notify_file():
     selected = funcs.read_notify_file()
     if selected:
@@ -399,33 +398,32 @@ def main():
             try:
                 info.update(info_extractor.get_info())
             except Exception as e:
-                print str(e)
+                print(str(e))
         return info
 
     def print_links(name, build_url):
         info = get_info(build_url)
-        print name
+        print(name)
         try:
             for link in build_url:
                 try:
                     summary = info[link.version]
                 except KeyError:
-                    summary = ""
-                print "\t{:25s} {}".format(str(link) + ' *' * (link > installed_build),
-                                           summary)
+                    summary = ''
+                print('\t{:25s} {}'.format(str(link) + ' *' * (link > installed_build), summary))
         except (requests.RequestException, BuildURLError) as e:
-            print str(e)
-        print
+            print(str(e))
+        print()
 
-    print "Installed build = {}".format(installed_build)
-    print
+    print ('Installed build = {}'.format(installed_build))
+    print()
 
     urls = sources()
 
     if len(sys.argv) > 1:
         name = sys.argv[1]
         if name not in urls:
-            print '"{}" not in URL list'.format(name)
+            print('"{}" not in URL list'.format(name))
         else:
             print_links(name, urls[name])
     else:
@@ -433,5 +431,5 @@ def main():
             print_links(name, build_url)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

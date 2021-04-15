@@ -16,7 +16,7 @@ else:
 if xbmc_log:
     def _log(txt, level=xbmc.LOGDEBUG):
         if not (addon.get_setting('debug') == 'false' and level == xbmc.LOGDEBUG):
-            msg = '{}: {}'.format(addon.name, txt)
+            msg = '## {} ##: {}'.format(addon.name, txt)
             xbmc.log(msg, level)
 
     def log(txt):
@@ -61,4 +61,4 @@ def with_logging(msg_success=None, msg_error=None, log_exc=True):
 
 
 def log_version():
-    log("version {}".format(addon.version))
+    log('version {}'.format(addon.version))

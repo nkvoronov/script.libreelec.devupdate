@@ -18,7 +18,7 @@ class BaseInfoDialog(xbmcgui.WindowXMLDialog):
 class InfoDialog(BaseInfoDialog):
     def __new__(cls, *args):
         return super(InfoDialog, cls).__new__(
-            cls, "script-devupdate-info.xml", addon.src_path)
+            cls, 'script-devupdate-info.xml', addon.src_path)
 
     def __init__(self, title, text):
         self._title = title
@@ -32,7 +32,7 @@ class InfoDialog(BaseInfoDialog):
 class HistoryDialog(BaseInfoDialog):
     def __new__(cls, *args):
         return super(HistoryDialog, cls).__new__(
-            cls, "script-devupdate-history.xml", addon.src_path)
+            cls, 'script-devupdate-history.xml', addon.src_path)
 
     def __init__(self, history):
         self._history = history
@@ -45,7 +45,7 @@ class HistoryDialog(BaseInfoDialog):
                 li = xbmcgui.ListItem()
                 for attr in ('source', 'version'):
                     li.setProperty(attr, str(getattr(install, attr)))
-                li.setProperty('timestamp', install.timestamp.strftime("%Y-%m-%d %H:%M"))
+                li.setProperty('timestamp', install.timestamp.strftime('%Y-%m-%d %H:%M'))
                 install_list.addItem(li)
         else:
             self.getControl(1).setLabel(L10n(32032))
@@ -62,7 +62,7 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
 
     def __new__(cls, *args):
         return super(BuildSelectDialog, cls).__new__(
-            cls, "script-devupdate-main.xml", addon.src_path)
+            cls, 'script-devupdate-main.xml', addon.src_path)
 
     def __init__(self, installed_build):
         self._installed_build = installed_build
@@ -74,8 +74,8 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
         try:
             self._build_url = self._sources[self._initial_source]
         except KeyError:
-            self._build_url = self._sources.itervalues().next()
-            self._initial_source = self._sources.iterkeys().next()
+            self._build_url = next(iter(self._sources.values()))
+            self._initial_source = next(iter(self._sources.keys()))
         self._builds = self._get_build_links(self._build_url)
 
         self._build_infos = {}
@@ -87,7 +87,7 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
         self._selected_build = None
 
         self._sources_list = self.getControl(self.SOURCE_LIST_ID)
-        self._sources_list.addItems(self._sources.keys())
+        self._sources_list.addItems(list(self._sources.keys()))
 
         self._build_list = self.getControl(self.BUILD_LIST_ID)
 
@@ -96,7 +96,7 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
         self._info_textbox = self.getControl(self.INFO_TEXTBOX_ID)
 
         if self._builds:
-            self._selected_source_position = self._sources.keys().index(self._initial_source)
+            self._selected_source_position = list(self._sources.keys()).index(self._initial_source)
 
             self._set_builds(self._builds)
         else:
@@ -172,16 +172,16 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
             try:
                 info = self._build_infos[build_version]
             except KeyError:
-                log.log("Build details for build {} not found".format(build_version))
+                log.log('Build details for build {} not found'.format(build_version))
             else:
                 if info.details is not None:
                     try:
                         details = info.details.get_text()
                     except Exception as e:
-                        log.log("Unable to retrieve build details: {}".format(e))
+                        log.log('Unable to retrieve build details: {}'.format(e))
                     else:
                         if details:
-                            build = "[B]{}[/B]\n\n".format(L10n(32035)).format(build_version)
+                            build = '[B]{}[/B]\n\n'.format(L10n(32035)).format(build_version)
                             dialog = InfoDialog(build, details)
                             dialog.doModal()
 
@@ -190,20 +190,20 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
 
     def onFocus(self, controlID):
         if controlID != self.BUILD_LIST_ID:
-            self._info_textbox.setText("")
+            self._info_textbox.setText('')
             self._builds_focused = False
 
         if controlID == self.BUILD_LIST_ID:
             self._builds_focused = True
             self._set_build_info()
         elif controlID == self.SOURCE_LIST_ID:
-            self._info_textbox.setText("[COLOR=white]{}[/COLOR]".format(L10n(32141)))
+            self._info_textbox.setText('[COLOR=white]{}[/COLOR]'.format(L10n(32141)))
         elif controlID == self.SETTINGS_BUTTON_ID:
-            self._info_textbox.setText("[COLOR=white]{}[/COLOR]".format(L10n(32036)))
+            self._info_textbox.setText('[COLOR=white]{}[/COLOR]'.format(L10n(32036)))
         elif controlID == self.HISTORY_BUTTON_ID:
-            self._info_textbox.setText("[COLOR=white]{}[/COLOR]".format(L10n(32037)))
+            self._info_textbox.setText('[COLOR=white]{}[/COLOR]'.format(L10n(32037)))
         elif controlID == self.CANCEL_BUTTON_ID:
-            self._info_textbox.setText("[COLOR=white]{}[/COLOR]".format(L10n(32038)))
+            self._info_textbox.setText('[COLOR=white]{}[/COLOR]'.format(L10n(32038)))
 
     @utils.showbusy
     def _get_build_links(self, build_url):
@@ -222,13 +222,13 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
         return links
 
     def _get_build_infos(self, build_url):
-        log.log("Retrieving build information")
+        log.log('Retrieving build information')
         info = {}
         for info_extractor in build_url.info_extractors:
             try:
                 info.update(info_extractor.get_info())
             except Exception as e:
-                log.log("Unable to retrieve build info: {}".format(str(e)))
+                log.log('Unable to retrieve build info: {}'.format(str(e)))
         return info
 
     def _set_build_info(self):
@@ -237,15 +237,15 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
             try:
                 build_version = selected_item.getLabel()
             except AttributeError:
-                log.log("Unable to get selected build name")
+                log.log('Unable to get selected build name')
             else:
                 try:
                     info = self._build_infos[build_version].summary
                 except KeyError:
-                    info = ""
-                    log.log("Build info for build {} not found".format(build_version))
+                    info = ''
+                    log.log('Build info for build {} not found'.format(build_version))
                 else:
-                    log.log("Info for build {}:\n\t{}".format(build_version, info))
+                    log.log('Info for build {}:\n\t{}'.format(build_version, info))
             self._info_textbox.setText(info)
 
     def _get_and_set_build_info(self, build_url):
@@ -256,7 +256,7 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
         source = self._sources_list.getSelectedItem().getLabel()
         build_url = self._sources[source]
 
-        log.log("Full URL = " + build_url.url)
+        log.log('Full URL = ' + build_url.url)
         return build_url
 
     def _set_builds(self, builds):
@@ -275,7 +275,7 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
                 icon = 'downgrade'
             else:
                 icon = 'overlaywatched'
-            li.setIconImage("{}.png".format(icon))
+            li.setArt({'icon' : '{}.png'.format(icon)})
             self._build_list.addItem(li)
         self.setFocusId(self.BUILD_LIST_ID)
         self._builds_focused = True

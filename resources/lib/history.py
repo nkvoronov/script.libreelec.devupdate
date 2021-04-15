@@ -5,10 +5,10 @@ from datetime import datetime
 import sqlite3
 from collections import namedtuple
 
-import log
+from . import log
 
 try:
-    import addon
+    from . import addon
 except ImportError:
     pass
 else:
@@ -37,8 +37,8 @@ def maybe_create_database():
                          timestamp TIMESTAMP NOT NULL)''')
 
 
-@log.with_logging("Added install {}|{} to database",
-                  "Failed to add install {}|{} to database")
+@log.with_logging('Added install {}|{} to database',
+                  'Failed to add install {}|{} to database')
 def add_install(source, build):
     maybe_create_database()
     with sqlite3.connect(HISTORY_FILE) as conn:
@@ -60,8 +60,8 @@ def get_build_id(source, version):
                             (source, version)).fetchone()[0]
 
 
-@log.with_logging("Retrieved install history for source {}",
-                  "Failed to retrieve install history for source {}")
+@log.with_logging('Retrieved install history for source {}',
+                  'Failed to retrieve install history for source {}')
 def get_source_install_history(source):
     with sqlite3.connect(HISTORY_FILE, detect_types=sqlite3.PARSE_DECLTYPES) as conn:
         conn.row_factory = _row_factory
@@ -72,8 +72,8 @@ def get_source_install_history(source):
                             (source,)).fetchall()
 
 
-@log.with_logging("Retrieved full install history",
-                  "Failed to retrieve full install history")
+@log.with_logging('Retrieved full install history',
+                  'Failed to retrieve full install history')
 def get_full_install_history():
     with sqlite3.connect(HISTORY_FILE, detect_types=sqlite3.PARSE_DECLTYPES) as conn:
         conn.row_factory = _row_factory
@@ -92,12 +92,12 @@ def is_previously_installed(source, build):
 
 def format_history_lines(history):
     for install in reversed(history):
-        yield "{:16s}  {:>7s}  {:30s}".format(
-            install.timestamp.strftime("%Y-%m-%d %H:%M"), install.version,
+        yield '{:16s}  {:>7s}  {:30s}'.format(
+            install.timestamp.strftime('%Y-%m-%d %H:%M'), install.version,
             install.source)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     from argparse import ArgumentParser, RawTextHelpFormatter
     import sys
     import logging
@@ -106,19 +106,19 @@ if __name__ == "__main__":
                             formatter_class=RawTextHelpFormatter)
     parser.add_argument(
         'dbpath', nargs='?',
-        default="/storage/.kodi/userdata/addon_data/script.libreelec.devupdate/builds.db",
-        help="path to the install history database \n (default: %(default)s)")
+        default='/storage/.kodi/userdata/addon_data/script.libreelec.devupdate/builds.db',
+        help='path to the install history database \n (default: %(default)s)')
 
     parser.add_argument(
         '--logdebug', action='store_true',
-        help="log all debug messages to the log file ({})".format(log.log_path))
+        help='log all debug messages to the log file ({})'.format(log.log_path))
 
     args = parser.parse_args()
 
     HISTORY_FILE = args.dbpath
 
     if not os.path.isfile(HISTORY_FILE):
-        print "dbpath does not exist"
+        print('dbpath does not exist')
         parser.print_usage()
         sys.exit(1)
 
@@ -127,4 +127,4 @@ if __name__ == "__main__":
 
     history = get_full_install_history()
     for line in format_history_lines(history):
-        print line
+        print(line)

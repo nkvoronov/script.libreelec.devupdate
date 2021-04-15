@@ -22,17 +22,17 @@ OVERCLOCK_RE = re.compile(r'^([ \t]*({})[ \t]*=)'.format('|'.join(OVERCLOCK_SETT
 
 def maybe_restore_config():
     if os.path.exists(CONFIG_BACKUP_PATH):
-        log.log("Re-enabling overclocking")
+        log.log('Re-enabling overclocking')
         with libreelec.write_context():
             xbmcvfs.copy(CONFIG_BACKUP_PATH, CONFIG_PATH)
         xbmcvfs.delete(CONFIG_BACKUP_PATH)
         if progress.reboot_countdown(L10n(32054), L10n(32040),
                                      addon.get_int_setting('reboot_count')):
-            log.log("Restarting")
+            log.log('Restarting')
             xbmc.restart()
             sys.exit()
         else:
-            log.log("Restart cancelled")
+            log.log('Restart cancelled')
 
 
 def maybe_disable_overclock():

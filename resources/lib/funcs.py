@@ -5,7 +5,7 @@ import sys
 import stat
 import glob
 
-import log, libreelec
+from . import log, libreelec
 
 
 TEMP_DIR = os.path.expanduser('~')
@@ -77,14 +77,14 @@ def maybe_update_extlinux():
         remove_file(UPDATE_EXTLINUX_FILE)
 
 
-@log.with_logging("Created directory {}", log_exc=False)
+@log.with_logging('Created directory {}', log_exc=False)
 def create_directory(path):
     os.mkdir(path)
 
 
-@log.with_logging("Removed file", "Could not remove file")
+@log.with_logging('Removed file', 'Could not remove file')
 def remove_file(file_path):
-    log.log("Removing {}".format(file_path))
+    log.log('Removing {}'.format(file_path))
     try:
         os.remove(file_path)
     except OSError:
@@ -93,12 +93,12 @@ def remove_file(file_path):
         return True
 
 
-@log.with_logging(msg_error="Unable to make executable")
+@log.with_logging(msg_error='Unable to make executable')
 def make_executable(path):
     os.chmod(path, stat.S_IXUSR|stat.S_IRUSR|stat.S_IWUSR)
 
 
-@log.with_logging(msg_error="Unable to create symbolic link")
+@log.with_logging(msg_error='Unable to create symbolic link')
 def maybe_create_symlink(path, symlink_path):
     if not(os.path.islink(symlink_path) and
            os.path.realpath(symlink_path) == path):

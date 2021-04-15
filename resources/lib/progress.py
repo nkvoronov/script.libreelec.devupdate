@@ -4,20 +4,22 @@ import os
 import bz2
 import time
 import hashlib
-
-import xbmc, xbmcgui, xbmcvfs
+import xbmc
+import xbmcgui
+import xbmcvfs
 
 from .script_exceptions import Canceled, WriteError, DecompressError
 from .funcs import size_fmt
 from .addon import L10n
+from .log import log
 
 
 class Progress(xbmcgui.DialogProgress):
     def create(self, heading, line1=None, line2=None):
         if line1 is None:
-            line1 = " "
+            line1 = ' '
         if line2 is None:
-            line2 = " "
+            line2 = ' '
         super(Progress, self).create(heading, line1, line2)
 
     def update(self, percent, message=None):
@@ -91,7 +93,7 @@ class FileProgress(object):
                 raise WriteError(e)
             percent = int(self._done * 100 / self._size)
             bytes_per_second = self._done / (time.time() - start_time)
-            self._progress.update(percent, "{0}/s".format(size_fmt(bytes_per_second)))
+            self._progress.update(percent, '{0}/s'.format(size_fmt(bytes_per_second)))
 
     def _getdata(self):
         return self._in_f.read(self.BLOCK_SIZE)
@@ -130,7 +132,7 @@ def reboot_countdown(title, line1, count):
             msg = L10n(32059)
 
         progress.update(int((count - seconds) / count * 100),
-                        line1, msg, " ")
+                        line1, msg, ' ')
 
         xbmc.sleep(1000)
         if progress.iscanceled():
@@ -152,7 +154,8 @@ def md5sum_verified(md5sum_compare, path, background):
     BLOCK_SIZE = 8192
 
     hasher = hashlib.md5()
-    f = open(path)
+    log('md5sum_verified > ' + path)
+    f = open(path, 'rb')
 
     done = 0
     size = os.path.getsize(path)
@@ -168,4 +171,5 @@ def md5sum_verified(md5sum_compare, path, background):
     verify_progress.close()
 
     md5sum = hasher.hexdigest()
+    log(str(md5sum_compare) + ' == ' + md5sum)
     return md5sum == md5sum_compare

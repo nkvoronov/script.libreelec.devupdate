@@ -241,7 +241,7 @@ msgid "Rebooting..."
 msgstr ""
 
 msgctxt "#32060"
-msgid "ERROR: {}"
+msgid "ERROR : {}"
 msgstr ""
 
 msgctxt "#32061"

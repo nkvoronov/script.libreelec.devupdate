@@ -1,4 +1,6 @@
-import xbmc, xbmcvfs, xbmcaddon
+import xbmc
+import xbmcvfs
+import xbmcaddon
 
 __addon = xbmcaddon.Addon('script.libreelec.devupdate')
 

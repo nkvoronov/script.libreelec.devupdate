@@ -118,7 +118,7 @@ msgstr "Збірка {} буде встановлена після переза�
 
 msgctxt "#32027"
 msgid "A more recent build is available:  {}"
-msgstr "Більш свіжа збірка доступна: {}"
+msgstr "Доступна більш свіжа збірка : {}"
 
 msgctxt "#32028"
 msgid "Current build:  {}"
@@ -126,11 +126,11 @@ msgstr "Поточна збірка: {}"
 
 msgctxt "#32029"
 msgid "Show builds available to install?"
-msgstr "Показати збірки доступні для установки?"
+msgstr "Показати збірки доступні для встановлення?"
 
 msgctxt "#32030"
 msgid "Build  {}  is available"
-msgstr "Збірка {} доступна"
+msgstr "Доступна збірка {}"
 
 msgctxt "#32031"
 msgid "Install History"
@@ -241,8 +241,8 @@ msgid "Rebooting..."
 msgstr "Перевантаження..."
 
 msgctxt "#32060"
-msgid "ERROR: {}"
-msgstr "ПОМИЛКА: {}"
+msgid "ERROR : {}"
+msgstr "ПОМИЛКА : {}"
 
 msgctxt "#32061"
 msgid "Backup"

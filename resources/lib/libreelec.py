@@ -8,13 +8,13 @@ OS_RELEASE = dict(line.strip().replace('"', '').split('=')
                   for line in open('/etc/os-release'))
 
 try:
-    if OS_RELEASE['NAME'] == "LibreELEC":
+    if OS_RELEASE['NAME'] == 'LibreELEC':
         ARCH = OS_RELEASE['LIBREELEC_ARCH']
 except KeyError:
     ARCH = 'RPi.arm'
 
 UPDATE_DIR = os.path.join(os.path.expanduser('~'), '.update')
-if OS_RELEASE['NAME'] != "LibreELEC":
+if OS_RELEASE['NAME'] != 'LibreELEC':
     try:
         import xbmc
         import xbmcvfs
@@ -23,16 +23,16 @@ if OS_RELEASE['NAME'] != "LibreELEC":
         UPDATE_DIR = os.path.expanduser('~')
     else:
         # Enables testing in non OpenELEC Kodi
-        UPDATE_DIR = xbmcvfs.translatePath("special://temp/")
+        UPDATE_DIR = xbmcvfs.translatePath('special://temp/')
 
 UPDATE_IMAGES = ('SYSTEM', 'KERNEL')
 
 def dist():
     dist = OS_RELEASE['NAME']
-    if dist in ("LibreELEC"):
+    if dist in ('LibreELEC'):
         return dist.lower()
     else:
-        return "libreelec"
+        return 'libreelec'
 
 def mount_readwrite():
     subprocess.check_call(['mount', '-o', 'rw,remount', '/flash'])
