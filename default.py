@@ -142,12 +142,12 @@ class Main(object):
             log.log("Archive builds to " + self.archive_dir)
             if not xbmcvfs.exists(self.archive_root):
                 log.log('Unable to access archive')
-                utils.ok(L10n(32009), L10n(32010).format(self.archive_root), L10n(32011))
+                utils.ok(L10n(32009), L10n(32010).format(self.archive_root) + '\n' + L10n(32011))
                 addon.open_settings()
                 sys.exit(1)
             elif not xbmcvfs.mkdir(self.archive_dir):
                 log.log('Unable to create directory in archive')
-                utils.ok(L10n(32009), L10n(32012).format(self.archive_dir), L10n(32013))
+                utils.ok(L10n(32009), L10n(32012).format(self.archive_dir) + '\n' + L10n(32013))
                 sys.exit(1)
 
     def maybe_download(self):

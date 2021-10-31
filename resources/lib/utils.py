@@ -19,27 +19,27 @@ notification = xbmcgui.Dialog().notification
 
 
 def connection_error(msg):
-    ok(L10n(32041), msg, L10n(32042))
+    ok(L10n(32041), msg + '\n' + L10n(32042))
 
 
 def bad_url(url, msg=L10n(32043)):
-    ok(L10n(32044), msg, url, L10n(32045))
+    ok(L10n(32044), msg + '\n' + url + '\n' + L10n(32045))
 
 
 def url_error(url, msg):
     log.log_exception()
-    ok(L10n(32044), msg, url, L10n(32046))
+    ok(L10n(32044), msg + '\n' + url + '\n' + L10n(32046))
 
 
 def write_error(path, msg):
     log.log_exception()
-    ok(L10n(32047), msg, path, L10n(32048))
+    ok(L10n(32047), msg + '\n' + path + '\n' + L10n(32048))
     addon.open_settings()
 
 
 def decompress_error(path, msg):
     log.log_exception()
-    ok(L10n(32049), L10n(32050), ' ', msg)
+    ok(L10n(32049), L10n(32050) + '\n \n' + msg)
 
 
 def check_update_files(selected, force_dialog=False):
