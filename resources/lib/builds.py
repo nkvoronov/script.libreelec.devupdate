@@ -220,6 +220,7 @@ class BuildLinkExtractor(BaseExtractor):
         return BuildLink(self.url, href, *self.build_re.match(href).groups()[:2])
 
 class BuildLinkExtractorMultiPage(BuildLinkExtractor):
+    BASE_URL = ''
 
     def __iter__(self):
         html = self._text()
@@ -245,7 +246,7 @@ class BuildLinkExtractorMultiPage(BuildLinkExtractor):
 
             if next_page_link:
 
-                href = next_page_link['href']
+                href = self.BASE_URL + next_page_link['href']
                 html = requests.get(href).text
 
             else:
@@ -259,6 +260,7 @@ class YDBuildLinkExtractor(BuildLinkExtractor):
 
 class YDBuildLinkExtractorAll(BuildLinkExtractorMultiPage):
     BUILD_RE = '.*{dist}.*-{arch}-[\d\.]+-(\d+)-r\d+[a-z]*-g([0-9a-z]+)\.tar(|\.bz2)'
+    BASE_URL = 'https://github.com'
 
 class ReleaseLinkExtractor(BuildLinkExtractor):
     BUILD_RE = '.*{dist}.*-{arch}-([\d\.]+)\.tar(|\.bz2)'
